@@ -19,11 +19,22 @@ except mariadb.Error as e:
     sys.exit(1)
 
 curs = conn.cursor()
+conn.database = ("data")
+
+
 
 
 
 def create_database():
     curs.execute("CREATE DATABASE data")
+
+
+def load_data_to_db():
+    file=('data/Employee_Information.csv')
+    csv_data = csv.reader(file)
+    for row in csv_data:
+        print(row)
+        
 
     
     
