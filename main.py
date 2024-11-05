@@ -8,18 +8,18 @@ import csv
 
 try:
     conn = mariadb.connect(
+        host="localhost",
         user="user",
         password="",
-        host="localhost",
     )
+    curs = conn.cursor()
     print("Connected to Database")
 
 except mariadb.Error as e:
     print(f"Error :(: {e}")
-    sys.exit(1)
 
-curs = conn.cursor()
 
+sp = pandas.read.csv("Student_Performance_Data.csv")
 
 
 def create_database():
