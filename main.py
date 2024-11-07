@@ -8,33 +8,82 @@ import csv
 try:
     conn = mariadb.connect(
         host="localhost",
-        user="zaarifsardar",
+        user="franklin",
         password="",
+
 
     )
     print("Connected to mariaDB")
+
+
    
     cursor = conn.cursor()
+    cursor.execute("CREATE DATABASE IF NOT EXISTS data")
     conn.database = 'data'
 
     employee = pandas.read_csv('data/Employee_Information.csv')
-    print(employee)
-   
-
-    for index, row in employee.iterrows():
-        cursor.execute("INSERT INTO Employee (Employee_ID, DOB, DOJ, Department_ID) values(?,?,?,?)", (row.Employee_ID, row.DOB, row.DOJ, row.Department_ID))
-    conn.commit()
-    cursor.close()
+    department = pandas.read_csv('data/Department_Information.csv')
+    students = pandas.read_csv('data/Student_Counceling_Information.csv')
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Employee (
-    Employee_ID VARCHAR(50),
+    Employee_ID VARCHAR(50) PRIMARY KEY,
     DOB VARCHAR(20),
     DOJ VARCHAR(20),
     Department_ID VARCHAR(50)
 );
 """)
-    cursor 
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Department (
+    Department_ID VARCHAR(100) PRIMARY KEY,
+    Department_Name LONGTEXT,
+    DOE LONGTEXT
+);
+""")
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Students (
+    Student_ID VARCHAR(100),
+    DOA VARCHAR(20),
+    DOB VARCHAR(20),
+    Department_Choices LONGTEXT,
+    Department_Admission LONGTEXT,
+    PRIMARY KEY (Student_ID, DOA, Department_Choice)
+);
+""")
+    
+
+
+    
+    for index, row in employee.iterrows():
+        cursor.execute("INSERT INTO Employee (Employee_ID, DOB, DOJ, Department_ID) values(?,?,?,?)", (row.Employee_ID, row.DOB, row.DOJ, row.Department_ID))
+    conn.commit()
+
+
+    for index, row in department.iterrows():
+        cursor.execute("INSERT IGNORE INTO Department (Department_ID, Department_Name, DOE) VALUES (?,?,?)", (row.Department_ID, str(row.Department_Name), str(row.DOE)))
+    
+    conn.commit()
+
+
+    for index, row in students.iterrows():
+        cursor.execute("INSERT INTO Students (Student_ID, DOA, DOB, Department_Choices, Department_Admission) values(?,?,?,?,?)", (row.Student_ID, row.DOA, row.DOB, str(row.Department_Choices), str(row.Department_Admission)))
+    conn.commit()
+
+
+    
+
+
+
+
+
+
+
+
+    cursor.close()
+
+    
     
 
 
