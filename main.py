@@ -19,16 +19,23 @@ except mariadb.Error as e:
     print(f"Error :(: {e}")
 
 
+def load_data_to_db():
+    employee = pandas.read_csv('data/Employee_Information')
+    department = pandas.read_csv('data/Department_Information')
+
+
 
 def create_database():
-    curs.execute("CREATE DATABASE data")
+    curs.execute("""
+CREATE TABLE IF NOT EXISTS Employee (
+    Employee_ID VARCHAR(50),
+    DOB VARCHAR(20),
+    DOJ VARCHAR(20),
+    Department_ID VARCHAR(50)
+);
+""")
 
 
-def load_data_to_db():
-    file=('data/Employee_Information.csv')
-    csv_data = csv.reader(file)
-    for row in csv_data:
-        print(row)
         
 
     
