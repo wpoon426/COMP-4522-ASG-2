@@ -24,6 +24,7 @@ try:
     employee = pandas.read_csv('data/Employee_Information.csv')
     department = pandas.read_csv('data/Department_Information.csv')
     students = pandas.read_csv('data/Student_Counceling_Information.csv')
+    performance = pandas.read_csv('data/Student_Performance_Data.csv')
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Employee (
@@ -51,6 +52,17 @@ try:
     Department_Admission LONGTEXT
 );
 """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Performance (
+    Student_ID VARCHAR(100),
+    Semster_Name VARCHAR(100),
+    Paper_ID VARCHAR(50),
+    Paper_Name LONGTEXT,
+    Marks INTEGER,
+    Effort_Hours INTEGER
+);
+""")
     
 
 
@@ -70,6 +82,9 @@ try:
         cursor.execute("INSERT INTO Students (Student_ID, DOA, DOB, Department_Choices, Department_Admission) values(?,?,?,?,?)", (row.Student_ID, row.DOA, row.DOB, str(row.Department_Choices), str(row.Department_Admission)))
     conn.commit()
 
+    for index, row in performance.iterrows():
+        cursor.execute("INSERT INTO Performance (Student_ID, Semster_Name, Paper_ID, Paper_Name, Marks, Effort_Hours) values(?,?,?,?,?, ?)", (row.Student_ID, row.Semster_Name, row.Paper_ID, str(row.Paper_Name), row.Marks, row.Effort_Hours))
+    conn.commit()
 
     
 
