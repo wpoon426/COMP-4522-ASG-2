@@ -48,8 +48,7 @@ try:
     DOA VARCHAR(20),
     DOB VARCHAR(20),
     Department_Choices LONGTEXT,
-    Department_Admission LONGTEXT,
-    PRIMARY KEY (Student_ID, DOA, Department_Choice)
+    Department_Admission LONGTEXT
 );
 """)
     
