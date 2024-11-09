@@ -4,7 +4,7 @@ import numpy
 import sys
 import csv
 
-
+# Drop all tables before re running to avoid duplicate data in each table.
 try:
     #Connect to db
     conn = mariadb.connect(
@@ -39,7 +39,7 @@ try:
     CREATE TABLE IF NOT EXISTS Department (
     Department_ID VARCHAR(100) PRIMARY KEY,
     Department_Name LONGTEXT,
-    DOE VARCHAR(5000)
+    DOE VARCHAR(255)
         );
         """)
     
@@ -68,15 +68,19 @@ try:
 
     #inserting data from csv files into sql tables
     for index, row in employee.iterrows():
-        cursor.execute("INSERT INTO Employee (Employee_ID, DOB, DOJ, Department_ID) values(?,?,?,?)", (row.Employee_ID, row.DOB, row.DOJ, row.Department_ID))
+        cursor.execute("INSERT IGNORE INTO Employee (Employee_ID, DOB, DOJ, Department_ID) values(?,?,?,?)", (row.Employee_ID, row.DOB, row.DOJ, row.Department_ID))
     conn.commit()
-
-
-    for index, row in department.iterrows():
-        cursor.execute("INSERT IGNORE INTO Department (Department_ID, Department_Name, DOE) VALUES (?,?,?)", (row.Department_ID, str(row.Department_Name), row.DOE))
-    
-    conn.commit()
-
+    # try catch to find and remove Duplicate Primary keys
+    try:
+        for index, row in department.iterrows():
+            cursor.execute("INSERT INTO Department (Department_ID, Department_Name, DOE) VALUES (?,?,?)", (row.Department_ID, str(row.Department_Name), str(row.DOE) ))
+            conn.commit()
+    except mariadb.IntegrityError as er:
+        if er.errno == 1062:
+            print(f"Dupe Primary KEY: ", er)
+            for index, row in department.iterrows():
+                cursor.execute("INSERT IGNORE INTO Department (Department_ID, Department_Name, DOE) VALUES (?,?,?)", (row.Department_ID, str(row.Department_Name), str(row.DOE) ))
+                conn.commit()
 
     for index, row in students.iterrows():
         cursor.execute("INSERT INTO Students (Student_ID, DOA, DOB, Department_Choices, Department_Admission) values(?,?,?,?,?)", (row.Student_ID, row.DOA, row.DOB, str(row.Department_Choices), str(row.Department_Admission)))
@@ -88,10 +92,21 @@ try:
 
 
 
+    #cleaning up data and point out exceptions lil test
+    query = "Select * FROM Performance WHERE Effort_Hours < 0;"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    if not result:
+     print(result)
+    else:
+        raise Exception(f"The following records are being thrown as an exception due to issues of Inconsistencys, Missing Values or improper Validity: ",result)
+
+
     cursor.close()
     sys.exit()
 
-
-
+except mariadb.IntegrityError as er:
+    if er.errno == 1062:
+        print(f"Dupe Primary KEY: ", er)
 except mariadb.Error as e:
     print(f"Error :(: {e}")

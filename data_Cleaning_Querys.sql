@@ -1,3 +1,5 @@
+drop table Department, Employee, Performance, Students;
+
 -- Department Table Check
 --Check 1 dep_ID uniqueness
 Select * FROM Department WHERE 
