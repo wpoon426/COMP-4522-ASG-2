@@ -4,6 +4,16 @@ import numpy
 import sys
 import csv
 
+sql_queries = [
+    ("Select * FROM Department GROUP BY Department_ID HAVING COUNT(Department_ID) > 1"),
+    ("Select * FROM Department GROUP BY Department_Name HAVING COUNT(Department_Name) > 1"),
+    ("Select * FROM Department WHERE Department_ID IS NULL OR Department_Name IS NULL OR DOE IS NULL"),
+    ("Select * FROM Students WHERE Department_Admission IS NULL"),
+    ("Select Students.Department_Admission, Student_ID FROM Department,Students WHERE Students.Department_Admission NOT IN (SELECT Department.Department_ID FROM Department)"),
+    ("Select * FROM Performance WHERE Marks > 100 OR Marks < 0"),
+    ("Select * FROM Performance WHERE Effort_Hours < 0"),
+    ("Select * FROM Performance WHERE Student_ID IS NULL OR Semster_Name IS NULL OR Paper_ID IS NULL OR Paper_Name IS NULL OR Marks IS NULL OR Effort_Hours IS NULL")
+]
 # Drop all tables before re running to avoid duplicate data in each table.
 try:
     #Connect to db
@@ -90,18 +100,27 @@ try:
         cursor.execute("INSERT INTO Performance (Student_ID, Semster_Name, Paper_ID, Paper_Name, Marks, Effort_Hours) values(?,?,?,?,?, ?)", (row.Student_ID, row.Semster_Name, row.Paper_ID, str(row.Paper_Name), row.Marks, row.Effort_Hours))
     conn.commit()
 
-
+    #function to show the exceptions or checks for improper/missing values
+    #Does not remove bad data yet from Performance Table
+    def Checks(querys):
+        index = 0
+        for query in querys:
+            if(query.split(' ', 2)[1] == 'Performance'):
+                print("Check: 1",index)
+                index = index + 1
+            else:
+                print("Check:",index)
+                cursor.execute(query)
+                result = cursor.fetchall()
+                if not result:
+                    print(result)
+                else:
+                    print(f"The following records are being thrown as an exception due to issues of Inconsistencys, Missing Values or improper Validity: ",result, "\n")
+                index = index + 1
+    Checks(sql_queries)
 
     #cleaning up data and point out exceptions lil test
-    query = "Select * FROM Performance WHERE Effort_Hours < 0;"
-    cursor.execute(query)
-    result = cursor.fetchall()
-    if not result:
-     print(result)
-    else:
-        raise Exception(f"The following records are being thrown as an exception due to issues of Inconsistencys, Missing Values or improper Validity: ",result)
-
-
+ 
     cursor.close()
     sys.exit()
 
