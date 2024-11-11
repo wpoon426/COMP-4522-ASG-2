@@ -4,15 +4,26 @@ import numpy
 import sys
 import csv
 
+# TO AVOID DUPLICATES DROP TABLES BEFORE RESTARTING PROGRAM
+
+# Queries that show info that needs to be deleted
+del_queries = [
+    ("Select * FROM Performance WHERE Marks > 100 OR Marks < 0"),
+    ("Select * FROM Performance WHERE Effort_Hours < 0"),
+    ("Select * FROM Performance WHERE Student_ID IS NULL OR Semster_Name IS NULL OR Paper_ID IS NULL OR Paper_Name IS NULL OR Marks IS NULL OR Effort_Hours IS NULL")    
+]
+#Queries that will display exceptions and or delete improper data
 sql_queries = [
     ("Select * FROM Department GROUP BY Department_ID HAVING COUNT(Department_ID) > 1"),
     ("Select * FROM Department GROUP BY Department_Name HAVING COUNT(Department_Name) > 1"),
+    ("Select * FROM Department"),# for the DOE >= 1900 but not sure how to do due to DOE being in reverse order and a string
     ("Select * FROM Department WHERE Department_ID IS NULL OR Department_Name IS NULL OR DOE IS NULL"),
     ("Select * FROM Students WHERE Department_Admission IS NULL"),
     ("Select Students.Department_Admission, Student_ID FROM Department,Students WHERE Students.Department_Admission NOT IN (SELECT Department.Department_ID FROM Department)"),
-    ("Select * FROM Performance WHERE Marks > 100 OR Marks < 0"),
-    ("Select * FROM Performance WHERE Effort_Hours < 0"),
-    ("Select * FROM Performance WHERE Student_ID IS NULL OR Semster_Name IS NULL OR Paper_ID IS NULL OR Paper_Name IS NULL OR Marks IS NULL OR Effort_Hours IS NULL")
+    ("DELETE FROM Performance WHERE Marks > 100 OR Marks < 0"),
+    ("DELETE FROM Performance WHERE Effort_Hours < 0"),
+    #should be one more for Performance here just not sure how to do it. Not a delete tho.
+    ("DELETE FROM Performance WHERE Student_ID IS NULL OR Semster_Name IS NULL OR Paper_ID IS NULL OR Paper_Name IS NULL OR Marks IS NULL OR Effort_Hours IS NULL")
 ]
 # Drop all tables before re running to avoid duplicate data in each table.
 try:
@@ -21,8 +32,6 @@ try:
         host="localhost",
         user="zaarifsardar", #change to your username before attempting to connect
         password="",
-
-
     )
     print("Connected to mariaDB")
    
@@ -101,29 +110,39 @@ try:
     conn.commit()
 
     #function to show the exceptions or checks for improper/missing values
-    #Does not remove bad data yet from Performance Table
-    def Checks(querys):
-        index = 0
+    #Removes bad data yet from Performance Table
+    def Checks(querys,del_queries):
+        index = 1
         for query in querys:
-            if(query.split(' ', 2)[1] == 'Performance'):
-                print("Check: 1",index)
+            if(query.split(' ')[0] == 'DELETE'):
+                for q in del_queries:
+                    cursor.execute(q)
+                    result = cursor.fetchall()
+                    if not result:# if query yeilds no results
+                        index = index + 1
+                        break
+                    print("Check:",index)
+                    print(f"The following records are being thrown as an Removed due to issues of Inconsistencys, Missing Values or improper Validity for Data needed for Analytics tasks: ",result, "\n")
+                    index = index + 1
+                cursor.execute(query)
+                conn.commit()
                 index = index + 1
             else:
                 print("Check:",index)
                 cursor.execute(query)
                 result = cursor.fetchall()
                 if not result:
-                    print(result)
+                    print(f"The query Came up empty :(",result,"\n")
                 else:
                     print(f"The following records are being thrown as an exception due to issues of Inconsistencys, Missing Values or improper Validity: ",result, "\n")
                 index = index + 1
-    Checks(sql_queries)
+    
+    Checks(sql_queries, del_queries)
 
-    #cleaning up data and point out exceptions lil test
  
     cursor.close()
     sys.exit()
-
+#Error Checking
 except mariadb.IntegrityError as er:
     if er.errno == 1062:
         print(f"Dupe Primary KEY: ", er)
