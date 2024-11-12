@@ -1,5 +1,7 @@
 import mariadb
 import pandas
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 import numpy
 import sys
 import csv
@@ -153,6 +155,11 @@ try:
                 index = index + 1
     
     Checks(sql_queries, del_queries)
+
+    total_effort_by_semester = performance.groupby('Semster_Name')['Effort_Hours'].sum()
+    print("Total Effort Hours by Semester:")
+    print(total_effort_by_semester)
+
 
  
     cursor.close()
