@@ -1,13 +1,8 @@
 import mariadb
 import pandas
-# import matplotlib.pyplot as plt
-# from sklearn.linear_model import LinearRegression
 import numpy
 import sys
 import csv
-
-# TO AVOID DUPLICATES DROP TABLES BEFORE RESTARTING PROGRAM
-
 
 
 # Queries that show info that needs to be deleted
@@ -29,7 +24,7 @@ sql_queries = [
     ("SELECT Student_ID, Paper_ID, COUNT(*) AS Duplicate_Count FROM Performance GROUP BY Student_ID, Paper_ID HAVING COUNT(*) > 1"),
     ("DELETE FROM Performance WHERE Student_ID IS NULL OR Semster_Name IS NULL OR Paper_ID IS NULL OR Paper_Name IS NULL OR Marks IS NULL OR Effort_Hours IS NULL")
 ]
-# Drop all tables before re running to avoid duplicate data in each table.
+
 try:
     #Connect to db
     conn = mariadb.connect(
@@ -39,8 +34,7 @@ try:
     )
     print("Connected to mariaDB")
 
-
-   
+    #Drops database in case of duplicate and loads the csv data files. 
     cursor = conn.cursor()
     cursor.execute("DROP DATABASE IF EXISTS data")
     cursor.execute("CREATE DATABASE IF NOT EXISTS data")
@@ -157,6 +151,7 @@ try:
     Checks(sql_queries, del_queries)
 
 
+    #Exports cleaned data for students and performance onto a csv file. 
     students.to_csv('Cleaned_Students_Data.csv', index=False)
     performance.to_csv('Cleaned_Performance_Data.csv', index=False)
     print("Clean Data has been Exported as CSV file")
