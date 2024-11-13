@@ -156,9 +156,10 @@ try:
     
     Checks(sql_queries, del_queries)
 
-    total_effort_by_semester = performance.groupby('Semster_Name')['Effort_Hours'].sum()
-    print("Total Effort Hours by Semester:")
-    print(total_effort_by_semester)
+
+    students.to_csv('Cleaned_Students_Data.csv', index=False)
+    performance.to_csv('Cleaned_Performance_Data.csv', index=False)
+    print("Clean Data has been Exported as CSV file")
 
 
  
