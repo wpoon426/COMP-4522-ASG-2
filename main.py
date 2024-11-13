@@ -1,7 +1,7 @@
 import mariadb
 import pandas
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+# import matplotlib.pyplot as plt
+# from sklearn.linear_model import LinearRegression
 import numpy
 import sys
 import csv
@@ -34,7 +34,7 @@ try:
     #Connect to db
     conn = mariadb.connect(
         host="localhost",
-        user="franklin", #change to your username before attempting to connect
+        user="fsnaps", #change to your username before attempting to connect
         password="",
     )
     print("Connected to mariaDB")
